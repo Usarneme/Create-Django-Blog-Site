@@ -2,14 +2,16 @@
 
 echo -n "Enter the app name (no spaces or special chars, please). eg: django_blog"
 read NAME
+echo -n "Enter the virtual environment name (no spaces or special chars, please). eg: myvenv"
+read VENV
 
 # conditional, test whether name was provided
 if [[ -n $NAME ]]
 then
   echo "CREATING DJANGO POWERED BLOG PROJECT: $NAME (NOTE: 21 STEPS TOTAL)"
   echo "1. Setting up virtual environment"
-  python3 -m venv $NAME
-  source $NAME/bin/activate
+  python3 -m venv $VENV
+  source $VENV/bin/activate
   echo "1. Done"
 
   echo "2. Creating requirements.txt file for project dependencies"

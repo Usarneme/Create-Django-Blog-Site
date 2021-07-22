@@ -5,6 +5,10 @@ read NAME
 echo -n "Enter the virtual environment name (no spaces or special chars, please). eg: myvenv"
 read VENV
 
+# define a newline to input where needed in sed replace commands
+NL='
+'
+
 # conditional, test whether name was provided
 if [[ -n $NAME ]]
 then
@@ -52,9 +56,9 @@ then
 
   echo "10. Updating Installed Apps in mysite/settings.py"
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then # Linux
-    sed -i "s/'django.contrib.staticfiles',/'django.contrib.staticfiles','$NAME.apps.BlogConfig',/g" mysite/settings.py
+    sed -i "s/'django.contrib.staticfiles',/'django.contrib.staticfiles',\\$NL    'blog.apps.BlogConfig',/g" mysite/settings.py
   elif [[ "$OSTYPE" == "darwin"* ]]; then # Mac OSX
-    sed -i '' "s/'django.contrib.staticfiles',/'django.contrib.staticfiles','$NAME.apps.BlogConfig',/g" mysite/settings.py
+    sed -i '' "s/'django.contrib.staticfiles',/'django.contrib.staticfiles',\\$NL    'blog.apps.BlogConfig',/g" mysite/settings.py
   fi
   echo "10. Done"
 
@@ -268,13 +272,13 @@ def post_edit(request, pk):
   echo "20. Done"
 
   echo "21. Create a superuser to administrate the newly-created blog"
-  python manage.py createsuperuser
+  python manage.py createsuperuser &&
   echo "21. Done"
 
   echo "ALL DONE. EXITING."
   echo
   echo "To start the project"
-  echo "first run ~ source $NAME/bin/activate"
+  echo "first run ~ source $VENV/bin/activate"
   echo "then run ~ python manage.py runserver"
   echo "Then open your browser to localhost:8000"
 

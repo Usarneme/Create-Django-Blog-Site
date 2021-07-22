@@ -1,7 +1,13 @@
 #!bin/bash
 
-echo -n "Enter the app name (no spaces or special chars, please). eg: django_blog"
-read NAME
+echo -n "Enter the app name (no spaces or special chars, please). eg: DjangoBlog"
+read LOWERCASE
+
+LETTERSONLY=`sed 's/[^a-zA-Z]//g' <<< $LOWERCASE `
+FIRST=`echo $LETTERSONLY|cut -c1|tr [a-z] [A-Z]`
+SECOND=`echo $LETTERSONLY|cut -c2-`
+NAME=$FIRST$SECOND
+
 echo -n "Enter the virtual environment name (no spaces or special chars, please). eg: myvenv"
 read VENV
 
@@ -31,7 +37,11 @@ then
   echo "4. Done"
 
   echo "5. Adding TIME ZONE America/Los_Angeles to mysite/settings.py"
-  echo "TIME_ZONE = 'America/Los_Angeles'" >> mysite/settings.py
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then # Linux
+    sed -i "s/TIME_ZONE = 'UTC'/TIME_ZONE = 'America\/Los_Angeles'/g" mysite/settings.py
+  elif [[ "$OSTYPE" == "darwin"* ]]; then # Mac OSX
+    sed -i '' "s/TIME_ZONE = 'UTC'/TIME_ZONE = 'America\/Los_Angeles'/g" mysite/settings.py
+  fi
   echo "5. Done"
 
   echo "6. Adding static root to mysite/settings.py"
@@ -56,9 +66,9 @@ then
 
   echo "10. Updating Installed Apps in mysite/settings.py"
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then # Linux
-    sed -i "s/'django.contrib.staticfiles',/'django.contrib.staticfiles',\\$NL    'blog.apps.BlogConfig',/g" mysite/settings.py
+    sed -i "s/'django.contrib.staticfiles',/'django.contrib.staticfiles',\\$NL    '$NAME.apps.${NAME}Config',/g" mysite/settings.py
   elif [[ "$OSTYPE" == "darwin"* ]]; then # Mac OSX
-    sed -i '' "s/'django.contrib.staticfiles',/'django.contrib.staticfiles',\\$NL    'blog.apps.BlogConfig',/g" mysite/settings.py
+    sed -i '' "s/'django.contrib.staticfiles',/'django.contrib.staticfiles',\\$NL    '$NAME.apps.${NAME}Config',/g" mysite/settings.py
   fi
   echo "10. Done"
 
@@ -83,11 +93,6 @@ class Post(models.Model):
     def __str__(self):
         return self.title" >> $NAME/models.py
   echo "11. Done"
-
-  echo "12. Updating database migration"
-  python manage.py makemigrations $NAME
-  python manage.py migrate $NAME
-  echo "12. Done"
 
   echo "13. Rewriting $NAME/admin.py to allow administration actions"
   rm $NAME/admin.py
@@ -270,6 +275,11 @@ def post_edit(request, pk):
   <path d=\"M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z\"/>
 </svg>" >> $NAME/templates/blog/icons/pencil.svg
   echo "20. Done"
+
+  echo "12. Updating database migration"
+  python manage.py makemigrations $NAME
+  python manage.py migrate $NAME
+  echo "12. Done"
 
   echo "21. Create a superuser to administrate the newly-created blog"
   python manage.py createsuperuser &&
